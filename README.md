@@ -13,7 +13,9 @@ A **production-ready, secure HashiCorp Nomad cluster** deployed on AWS using Ter
 - **CI/CD Pipeline** - Automated deployment with GitHub Actions
 
 ---
-
+## Architecture 
+![Nomad Architecture ](images/nomad-architecture.png)
+---
 ## 🚀 Quick Start
 
 ### Prerequisites
