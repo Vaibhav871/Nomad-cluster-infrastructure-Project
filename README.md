@@ -135,6 +135,13 @@ Applications deployed through Nomad are accessible via the client nodes:
 
 ### ASG Configuration Highlights
 - **Desired Count**: Defined as `TF_VAR_NOMAD_CLIENT_COUNT` to control initial and target client node count.
+
+### 🗄️ Terraform Backend
+- Uses **S3 backend** to store and manage Terraform state.
+- Ensures state is **centrally stored, durable, and accessible** to all team members.
+- **Prevents local state loss** and enables **safe collaboration**.
+- Uses **S3 for state locking** to avoid concurrent changes.
+
 ---
 
 ## 🏗️ Custom AMI with Packer
