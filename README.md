@@ -13,12 +13,14 @@ A **production-ready, secure HashiCorp Nomad cluster** deployed on AWS using Ter
 - **CI/CD Pipeline** - Automated deployment with GitHub Actions
 
 ---
-
+## Architecture 
+![Nomad Architecture ](images/nomad-architecture.png)
+---
 ## 🚀 Quick Start
 
 ### Prerequisites
 - AWS CLI configured with appropriate permissions
-- Terraform >= 1.5
+- Terraform 
 - SSH key pair for EC2 access
 - GitHub repository with secrets configured
 
@@ -60,7 +62,7 @@ terraform apply tfplan
    ```
 
 ### Nomad UI Access via SSH Tunnel
-**Securely access Nomad web interface through Bastion:**
+**Securely access Nomad web interface through Bastion from your local machine:**
 
 ```bash
 ssh -i .ssh/bastionkey -L 4646:<nomad-server-ip>:4646 ubuntu@<bastion-serevr-ip>
@@ -96,43 +98,41 @@ Applications deployed through Nomad are accessible via the client nodes:
 
 2. **Access application**
    ```bash
-   # If application exposes port 8080
-   ssh -i ./NomadCluster/.ssh/bastionkey -L 8080:10.0.2.250:8080 ubuntu@<BASTION_IP>
+   #  Application exposes port 8080
+   <nomad_client_public_ip>:8080
    ```
-   Access: **http://localhost:8080**
-
-3. **Direct client access (from Bastion)**
-   ```bash
-   curl http://<NOMAD_CLIENT_IP>:<APP_PORT>
-   ```
+   Access: **http://<client_public_ip>:8080**
 
 ---
 
 ## 🛡️ Security Best Practices Implemented
 
 ### Network Security
-- **Private subnets** for all Nomad nodes (no direct internet access)
+- **Private subnets** For Nomad Server
 - **Bastion host** as single point of entry with restricted security groups
 - **Security group rules** following principle of least privilege
 - **No public IPs** on Nomad server instances
 
 ### Access Control
-- **SSH key-based authentication** only (no password authentication)
+- **SSH key-based authentication** only 
 - **SSH agent forwarding** to avoid private key exposure on remote hosts
 - **IAM roles** with minimal required permissions for EC2 instances
-
-### Infrastructure Security
-- **Encrypted EBS volumes** for all instances
-- **Secrets management** via GitHub Secrets (never exposed in code)
 
 ### CI/CD Security
 - **GitHub Secrets** used for sensitive variables (AWS credentials, SSH keys)
 - **No hardcoded credentials** in Terraform or configuration files
 - **Scoped IAM roles** for deployment automation
-- **Terraform state** stored securely (remote backend recommended)
+- **Terraform state** stored securely at remote backend S3
 
 ### ASG Configuration Highlights
 - **Desired Count**: Defined as `TF_VAR_NOMAD_CLIENT_COUNT` to control initial and target client node count.
+
+### 🗄️ Terraform Backend
+- Used **S3 backend** to store and manage Terraform state.
+- Ensures state is **centrally stored, durable, and accessible** to all team members.
+- **Prevents local state loss** and enables **safe collaboration**.
+- Uses **S3 for state locking** to avoid concurrent changes.
+
 ---
 
 ## 🏗️ Custom AMI with Packer
@@ -142,7 +142,6 @@ This project uses **Packer to build custom AMIs** with pre-installed dependencie
 ### AMI Components
 - **Base OS**: Ubuntu 22.04 LTS
 - **Docker Engine**: Pre-installed and configured
-- **Nomad Binary**: Latest stable version
 - **System dependencies**: curl, wget, unzip, jq
 - **Security hardening**: Automatic security updates, SSH configuration
 
@@ -200,8 +199,9 @@ Required secrets for automated deployment:
 ```
 
 ### Pipeline Features
-- **Automated Terraform deployment** on pull request merge
-- **Infrastructure validation** and security scanning
+- **Automated Terraform deployment** on push to the `main` branch, triggered only when changes are made in the `terraform` directory.  
+- **Terraform destroy** can be executed via workflow dispatch. [In the future, approval-based Terraform runs will be implemented.] 
+- **Infrastructure validation** integrated into the pipeline.  
 
 ---
 
@@ -210,7 +210,7 @@ Required secrets for automated deployment:
 ### Prometheus Metrics
 - **Nomad cluster health** and job status
 - **Application performance** metrics
-- **Custom business metrics** via service discovery
+``` <bastio_server_ip:9090> ```
 
 ### Grafana Dashboards
 - **Nomad cluster overview** - Jobs, allocations, nodes
@@ -222,6 +222,8 @@ Required secrets for automated deployment:
 ## 🧹 Cleanup
 
 Destroy all resources when no longer needed:
+- **Terraform destroy** can be executed via workflow dispatch to destroy resources.
+  
 ```bash
 terraform destroy
 ```
