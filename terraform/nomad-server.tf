@@ -12,5 +12,4 @@ resource "aws_instance" "nomad_server" {
     Name    = "nomad-server"
     Cluster = "nomad-cluster"
   }
-
 }
