@@ -29,11 +29,14 @@ jobs:
           sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
           sudo apt-get update && sudo apt-get install packer -y
 
+      - name: Initialize Packer Plugins
+        run: cd packer && packer init nomad-server.pkr.hcl
+
       - name: Validate Packer Template
-        run: packer validate packer/nomad-server.pkr.hcl
+        run: cd packer && packer validate nomad-server.pkr.hcl
 
       - name: Build AMI with Packer
-        run: packer build -var-file=packer/variables.pkr.hcl packer/nomad-server.pkr.hcl
+        run: cd packer && packer build -var-file=variables.pkr.hcl nomad-server.pkr.hcl
 
       - name: Notify Success
         if: success()
@@ -42,3 +45,4 @@ jobs:
       - name: Notify Failure
         if: failure()
         run: echo "Build failed for Nomad AMI"
+        
